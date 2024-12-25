@@ -1,6 +1,5 @@
 package filters
 
-
 import (
     "strings"
     "os"
@@ -8,6 +7,7 @@ import (
     "bufio"
     "errors"
 )
+
 
 // Types
 
@@ -20,6 +20,7 @@ type (
     Filters []filter
 )
 
+
 // Functions
 
 func skipDefaults(fileName string) bool {
@@ -27,11 +28,12 @@ func skipDefaults(fileName string) bool {
         fileName == ".git" ||
         fileName == ".build" ||
         fileName == ".bin" ||
-        fileName == "idea" ||
+        fileName == ".idea" ||
         fileName == "_build" ||
         fileName == "elm-stuff" ||
         fileName == "node_modules" ||
         fileName == "stack_work" ||
+        fileName == ".qlot" ||
         strings.HasSuffix(fileName, ".app") ||
         strings.HasSuffix(fileName, ".png") ||
         strings.HasSuffix(fileName, ".jpg") ||
@@ -40,6 +42,7 @@ func skipDefaults(fileName string) bool {
         strings.HasSuffix(fileName, ".o") ||
         strings.HasSuffix(fileName, ".ppu")
 }
+
 
 // Receiver funcs
 
@@ -99,29 +102,32 @@ func (filters *Filters) buildFromLsrIgnore() {
 
 
 func (filters *Filters) buildFromGitIgnore() {
-    if fileExists("./.gitignore") {
-        f, err := os.Open("./.gitignore")
+    if !fileExists("./.gitignore") {
+        return;
+    }
 
-        if err != nil {
-            log.Fatal(err)
+    f, err := os.Open("./.gitignore")
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    defer f.Close()
+
+    scanner := bufio.NewScanner(f)
+
+    for scanner.Scan() {
+        line := scanner.Text()
+        if !folderExists(line) {
+            continue
         }
 
-        defer f.Close()
-
-        scanner := bufio.NewScanner(f)
-
-        for scanner.Scan() {
-            line := scanner.Text()
-            if !folderExists(line) {
-                continue
-            }
-
-            *filters = append(*filters, filter{
-                isFull: true,
-                value: line })
-        }
+        *filters = append(*filters, filter{
+            isFull: true,
+            value: line })
     }
 }
+
 
 // UTILS
 

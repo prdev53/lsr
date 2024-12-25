@@ -46,7 +46,7 @@ func addFile(fileName string) {
     lock.Lock()
 
     files = append(files, fileName)
-    if len(files) >= 10000 {
+    if len(files) >= 5000 {
         fmt.Println(strings.Join(files, "\n"))
         files = nil
     }
