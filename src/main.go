@@ -19,6 +19,8 @@ var (
 
 
 func readDir(path string) {
+    defer wg.Done()
+
     entries, err := os.ReadDir(path)
     if err != nil {
         log.Fatal(err)
@@ -32,13 +34,11 @@ func readDir(path string) {
 
         if entry.IsDir() {
             wg.Add(1)
-            go readDir(path + fileName + "/")
+            go readDir(path + fileName + string(os.PathSeparator))
         } else {
             addFile(path[2:] + fileName)
         }
     }
-
-    wg.Done()
 }
 
 
@@ -46,6 +46,8 @@ func addFile(fileName string) {
     lock.Lock()
 
     files = append(files, fileName)
+
+    // TODO Find the optimal number, this one is arbitrary
     if len(files) >= 5000 {
         fmt.Println(strings.Join(files, "\n"))
         files = nil
@@ -59,7 +61,7 @@ func main() {
     filters.Init()
 
     wg.Add(1)
-    go readDir("./")
+    go readDir("." + string(os.PathSeparator))
 
     wg.Wait()
 
