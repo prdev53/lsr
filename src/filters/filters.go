@@ -72,10 +72,14 @@ func (filters *Filters) Init() {
     filters.buildFromGitIgnore()
 }
 
+const (
+    lsrignore = "." + string(os.PathSeparator) + ".lsrignore"
+    gitignore = "." + string(os.PathSeparator) + ".gitignore"
+)
 
 func (filters *Filters) buildFromLsrIgnore() {
-    if fileExists("./.lsrignore") {
-        f, err := os.Open("./.lsrignore")
+    if fileExists(lsrignore) {
+        f, err := os.Open(lsrignore)
 
         if err != nil {
             log.Fatal(err)
@@ -93,20 +97,18 @@ func (filters *Filters) buildFromLsrIgnore() {
                 continue
             }
 
-            *filters = append(*filters, filter{
-                isFull: isFull,
-                value: line })
+            *filters = append(*filters, filter{ isFull: isFull, value: line })
         }
     }
 }
 
 
 func (filters *Filters) buildFromGitIgnore() {
-    if !fileExists("./.gitignore") {
+    if !fileExists(gitignore) {
         return;
     }
 
-    f, err := os.Open("./.gitignore")
+    f, err := os.Open(gitignore)
 
     if err != nil {
         log.Fatal(err)
@@ -122,9 +124,7 @@ func (filters *Filters) buildFromGitIgnore() {
             continue
         }
 
-        *filters = append(*filters, filter{
-            isFull: true,
-            value: line })
+        *filters = append(*filters, filter{ isFull: true, value: line })
     }
 }
 
@@ -133,14 +133,12 @@ func (filters *Filters) buildFromGitIgnore() {
 
 func folderExists(path string) bool {
     info, err := os.Stat(path)
-    return !errors.Is(err, os.ErrNotExist) &&
-        info.Mode().IsDir()
+    return !errors.Is(err, os.ErrNotExist) && info.Mode().IsDir()
 }
 
 
 func fileExists(path string) bool {
     info, err := os.Stat(path)
-    return !errors.Is(err, os.ErrNotExist) &&
-        !info.Mode().IsDir()
+    return !errors.Is(err, os.ErrNotExist) && !info.Mode().IsDir()
 }
 

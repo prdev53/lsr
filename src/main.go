@@ -9,6 +9,12 @@ import (
     flts "lsr/filters"
 )
 
+const (
+    CURR_DIR = "." + string(os.PathSeparator)
+    CURR_DIR_LEN = len(CURR_DIR)
+    // TODO Find the optimal number, this one is arbitrary
+    MAX_FILES_SIZE = 5000
+)
 
 var (
     lock sync.Mutex
@@ -36,7 +42,7 @@ func readDir(path string) {
             wg.Add(1)
             go readDir(path + fileName + string(os.PathSeparator))
         } else {
-            addFile(path[2:] + fileName)
+            addFile(path[CURR_DIR_LEN:] + fileName)
         }
     }
 }
@@ -47,8 +53,7 @@ func addFile(fileName string) {
 
     files = append(files, fileName)
 
-    // TODO Find the optimal number, this one is arbitrary
-    if len(files) >= 5000 {
+    if len(files) >= MAX_FILES_SIZE {
         fmt.Println(strings.Join(files, "\n"))
         files = nil
     }
@@ -61,7 +66,7 @@ func main() {
     filters.Init()
 
     wg.Add(1)
-    go readDir("." + string(os.PathSeparator))
+    go readDir(CURR_DIR)
 
     wg.Wait()
 
